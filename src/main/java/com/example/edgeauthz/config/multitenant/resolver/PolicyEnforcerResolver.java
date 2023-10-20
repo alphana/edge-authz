@@ -1,42 +1,36 @@
-package com.example.edgeauthz.authz.resolver;
+package com.example.edgeauthz.config.multitenant.resolver;
 
-import com.example.edgeauthz.TokenAttributes;
-import com.example.edgeauthz.props.MultiTenantProperties;
-import com.example.edgeauthz.props.multitenant.MultiTenantProperties;
-import com.example.edgeauthz.props.multitenant.TenantsContext;
-import lombok.Data;
+import com.example.edgeauthz.config.multitenant.resolver.PolicyEnforcerConfigResolver;
+import com.example.edgeauthz.config.multitenant.resolver.TenantsResolver;
 import org.keycloak.adapters.authorization.PolicyEnforcer;
 import org.keycloak.adapters.authorization.TokenPrincipal;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class PolicyEnforcerResolver {
 
     private final HashMap<String, PolicyEnforcer> tenantPolicyEnforcerMap;
-    private final TenantsContext tenants;
+    private final TenantsResolver tenants;
+    private final PolicyEnforcerConfigResolver enforcerConfigResolver;
 
-
-    public PolicyEnforcerResolver(TenantsContext tenants) {
+    public PolicyEnforcerResolver(TenantsResolver tenants) {
         this.tenants = tenants;
         tenantPolicyEnforcerMap = new HashMap<>();
+        enforcerConfigResolver = new PolicyEnforcerConfigResolver(tenants);
     }
 
-    public PolicyEnforcer resolve(String tenantId) {
-        return tenantPolicyEnforcerMap.computeIfAbsent(tenantId, s -> {
 
-            PolicyEnforcerConfigResolver enforcerConfigResolver = new PolicyEnforcerConfigResolver();
 
-            MultiTenantProperties.Tenant tenant = resolveTenant(tenantId);
+    public PolicyEnforcer resolve(TokenPrincipal token) {
+        String tenantName=tenants.getMatchingTenant(token).getName();
+        return tenantPolicyEnforcerMap.computeIfAbsent(tenantName,newTenantName -> {
 
-            MultiTenantProperties.ResourceServer resourceServerConfig = tenant.getSecurity().getResourceServer();
-            PolicyEnforcerConfig enforcerConfig = enforcerConfigResolver.resolve(resourceServerConfig).getEnforcerConfig();
+            PolicyEnforcerConfig enforcerConfig= enforcerConfigResolver.resolve(newTenantName);
 
-            PolicyEnforcer result = PolicyEnforcer.builder()
+            return PolicyEnforcer.builder()
                     .authServerUrl(enforcerConfig.getAuthServerUrl())
                     .realm(enforcerConfig.getRealm())
                     .clientId(enforcerConfig.getResource())
@@ -45,16 +39,7 @@ public class PolicyEnforcerResolver {
                     .enforcerConfig(enforcerConfig)
                     .build();
 
-            tenantPolicyEnforcerMap.put(tenantId, result);
-
-            return result;
         });
-    }
-
-
-    public PolicyEnforcer resolve(TokenPrincipal token) {
-        String tenantId=tenants.getTenant(token).getTenantId();
-        return tenantPolicyEnforcerMap.computeIfAbsent(tenantId,s -> {});
 
 
     }

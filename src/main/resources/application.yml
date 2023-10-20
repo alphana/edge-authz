@@ -18,12 +18,7 @@ spring:
   #            - RoleBasedAuthorizationFilter=
 
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://localhost:8080/auth/realms/beans/protocol/openid-connect/certs #http://localhost:8080/oauth2/jwks
-#          issuer-uri: http://localhost:8080/auth/realms/beans
+
 
 logging:
   level:
@@ -34,22 +29,30 @@ logging:
 #  pattern.console: "%d{yyyy-MM-dd HH:mm:ss} | %-5level | %logger{1.}:%L | %msg%n"
   pattern.console: "${CONSOLE_LOG_PATTERN:-%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(){faint} %clr(${LOGGED_APPLICATION_NAME:-}[%15.15t]){faint} %clr(${LOG_CORRELATION_PATTERN:-}){faint}%clr(%-40.40logger{39}:%L){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"
 
-
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          jwk-set-uri: http://localhost:8080/auth/realms/beans/protocol/openid-connect/certs #http://localhost:8080/oauth2/jwks
+##          issuer-uri: http://localhost:8080/auth/realms/beans
 apigateway:
   tenants:
     - name: tenant1
       security:
-        tokenKey: t1 #plt_duid claim
+        auth-server-url: "http://localhost:8080/auth/" # alternative to jwk-set-uri
+#        jwk-set-uri: http://localhost:8080/auth/realms/beans/protocol/openid-connect/certs # alternative to auth-server-url if auth-server-url defined ${auth-server-url}+"realms/"+${authz-client.realm}+"/protocol/openid-connect/certs"
+#        issuer: http://localhost:8080/auth/realms/beans # alternative to auth-server-url default value if auth-server-url defined ${auth-server-url}+"realms/"+${authz-client.realm}
+        resolverstrategy: azp #plt_duid claim [iss_realm|azp]
+        realm: "beans" # auth-server-url required
+        authorized-party: "edge-service"
         resourceserver:
-          auth-server-url: "http://localhost:8080/auth/" # alternative to jwk-set-uri
-          jwk-set-uri: http://localhost:8080/auth/realms/beans/protocol/openid-connect/certs # alternative to auth-server-url
-          authz-client:
-            realm: "beans" # auth-server-url required
+          resource: "gw-edge-service-client"
+          credentials:
+            secret: "77nT9BRBlzJWd0GpwACyzQVrmmFdHNIv"
+          authz-client-additional-setup:
             ssl-required: "external"
             verify-token-audience: true
-            resource: "gw-edge-service-client"
-            credentials:
-              secret: "77nT9BRBlzJWd0GpwACyzQVrmmFdHNIv"
+
 
 
 

@@ -1,44 +1,30 @@
-package com.example.edgeauthz.authz.resolver;
+package com.example.edgeauthz.config.multitenant.resolver;
 
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 
-
-import java.util.Map;
-
 public class PolicyEnforcerConfigResolver {
 
-    private MultiTenantProperties.ResourceServer resourceServer;
+    private final TenantsResolver tenantsResolver;
 
+    private PolicyEnforcerConfig getEnforcerConfig(TenantsResolver.TenantContext tenant) {
 
-
-
-    public String getAuthServerUrl() {
-        return resourceServer.getAuthServerUrl();
-    }
-
-    public String getRealm() {
-        return resourceServer.getAuthzClient().getRealm();
-    }
-
-    public String getResource() {
-        return resourceServer.getAuthzClient().getResource();
-    }
-
-    public Map<String, Object> getCredentials() {
-        return Map.of("secret", resourceServer.getAuthzClient().getCredentials().getSecret());
-    }
-
-    public PolicyEnforcerConfig getEnforcerConfig() {
         PolicyEnforcerConfig policyEnforcerConfig = new PolicyEnforcerConfig();
-        policyEnforcerConfig.setAuthServerUrl(getAuthServerUrl());
-        policyEnforcerConfig.setRealm(getRealm());
-        policyEnforcerConfig.setResource(getResource());
-        policyEnforcerConfig.setCredentials(getCredentials());
+
+        policyEnforcerConfig.setAuthServerUrl(tenant.getAuthServerUrl());
+        policyEnforcerConfig.setRealm(tenant.getRealm());
+
+        policyEnforcerConfig.setResource(tenant.getAuthZClient());
+        policyEnforcerConfig.setCredentials(tenant.getAuthZClientCredentialsAsMap());
+
         return policyEnforcerConfig;
     }
 
-    public PolicyEnforcerConfigResolver resolve(MultiTenantProperties.ResourceServer resourceServer) {
-        this.resourceServer=resourceServer;
-        return this;
+    public PolicyEnforcerConfigResolver(TenantsResolver tenantsResolver) {
+        this.tenantsResolver = tenantsResolver;
+    }
+
+    public PolicyEnforcerConfig resolve(String tenantName) {
+        TenantsResolver.TenantContext tenant = tenantsResolver.getTenant(tenantName);
+        return getEnforcerConfig(tenant);
     }
 }

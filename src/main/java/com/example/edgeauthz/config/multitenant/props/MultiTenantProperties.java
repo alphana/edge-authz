@@ -1,36 +1,30 @@
-package com.example.edgeauthz.props.multitenant;
+package com.example.edgeauthz.config.multitenant.props;
 
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.util.List;
-
+import java.util.Map;
+@Data
 @ConfigurationProperties(prefix = MultiTenantProperties.PREFIX)
-@Getter
-@Setter
 public class MultiTenantProperties {
 
     public static final String PREFIX = "apigateway";
 
     private List<Tenant> tenants;
 
-    @Getter
-    @Setter
+    @Data
     public static class Tenant {
         private String name;
         private TenantSecurity security;
-
     }
 
     public enum TenantResolverStrategy{
         plt_duid, plt_did , iss_realm,azp
     }
-    @Getter
-    @Setter
+    @Data
     public static class TenantSecurity {
         private String id;
         private String tokenClaimKey;
@@ -49,18 +43,15 @@ public class MultiTenantProperties {
         private AuthzClient authzClient;
     }
 
-    @Getter
-    @Setter
+    @Data
     public static class AuthzClient {
-
         private String sslRequired;
         private String verifyTokenAudience;
         private String resource;
         private Credentials credentials;
     }
 
-    @Getter
-    @Setter
+    @Data
     public  static class Credentials {
         private String secret;
     }

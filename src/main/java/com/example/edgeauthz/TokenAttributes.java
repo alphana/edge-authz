@@ -1,4 +1,4 @@
-package com.example.ottheredge.policyenforcer;
+package com.example.edgeauthz;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;

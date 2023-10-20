@@ -1,4 +1,4 @@
-package com.example.edgeauthz.authz;
+package com.example.edgeauthz.config.multitenant.authz;
 
 import org.keycloak.adapters.authorization.TokenPrincipal;
 import org.keycloak.adapters.authorization.spi.HttpRequest;

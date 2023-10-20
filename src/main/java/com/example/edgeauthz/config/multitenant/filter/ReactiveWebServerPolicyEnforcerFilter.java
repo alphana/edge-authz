@@ -1,6 +1,6 @@
-package com.example.edgeauthz.filter;
+package com.example.edgeauthz.config.multitenant.filter;
 
-import com.example.edgeauthz.authz.WebFluxHttpFacede;
+import com.example.edgeauthz.config.multitenant.authz.WebFluxHttpFacede;
 import com.example.edgeauthz.config.multitenant.resolver.PolicyEnforcerResolver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
